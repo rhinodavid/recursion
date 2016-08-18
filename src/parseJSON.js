@@ -8,7 +8,7 @@
 var trimWhitespace = function (str) {
   // takes a string and removes spaces from the beginning
   // and end of the string
-
+  
   // currently only trims spaces. will need to eventually
   // include tab, newline, etc
   if (str[0] === ' ') {
@@ -19,10 +19,6 @@ var trimWhitespace = function (str) {
     return str;
   }
 };
-
-
-
-
 
 var parseJSON = function(json) {
   // your code goes here
