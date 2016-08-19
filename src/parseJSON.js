@@ -51,7 +51,7 @@ var getInnerString = function(str, char) {
   
   var str = trimWhitespace(str);
 
-  if ((checkBoundingChar(str, char))) {
+  if (!(checkBoundingChar(str, char))) {
     // str isn't properly formed
     return undefined;
   }
@@ -61,8 +61,61 @@ var getInnerString = function(str, char) {
 
 ////////// HELPER //////////
 
+var parseObj = function(json) {
+  // check for object
+  var result = {};
 
+  var innerString = getInnerString(json, '{');
+  if (!innerString) {
+    // not an actual object
+    return undefined;
+  }
+  innerString = trimWhitespace(innerString);
+  if (innerString[0] !== '"') {
+    // object keys not surrounded by quotes,
+    // therefore JSON is not properly formed
+    return undefined;
+  }
+  // walk through string and find other quotation mark
+  var posQuote = -1;
+  for (var i = 1; i < innerString.length; i++) {
+    if (posQuote === -1 && innerString[i] === '"' &&
+      innerString[i-1] !== '\\') {
+      posQuote = i;
+      break;
+    }
+  }
 
+  if (posQuote === -1) {
+    // no matching quote on the other side.
+    // JSON is not properly formed
+    return undefined;
+  }
+
+  var key = innerString.slice(1, posQuote);
+
+  // now find the value to go with key
+
+  var remainingString = innerString.slice(posQuote + 1);
+  remainingString = trimWhitespace(remainingString);
+
+  // first char should now be the ':'
+
+  if (remainingString[0] !== ':') {
+    return undefined;
+  }
+
+  var valueString = trimWhitespace(remainingString.slice(1)); // remove : and trim
+
+  result[key] = valueString;
+
+  // currently all values are strings.
+  // need to evaluate them and see if they need to be further parsed
+  // (send back to evaluate as JSON??)
+
+  return result;
+
+};
 
 
 ////////////////////////////
