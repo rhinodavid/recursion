@@ -107,7 +107,7 @@ var parseObj = function(json) {
 
   var valueString = trimWhitespace(remainingString.slice(1)); // remove : and trim
 
-  result[key] = valueString;
+  result[key] = parseJSON(valueString);
 
   // currently all values are strings.
   // need to evaluate them and see if they need to be further parsed
@@ -122,5 +122,17 @@ var parseObj = function(json) {
 
 var parseJSON = function(json) {
   // your code goes here
+
+  if (typeof json !== 'string') {
+    return undefined;
+  }
+
+  var json = trimWhitespace(json);
+
+  if (json[0] === '{') {
+    return parseObj(json);
+  } else { // more cases need to go here. just obj and num for now
+    return +json;
+  }
 };
 
