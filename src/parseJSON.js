@@ -145,7 +145,7 @@ var parseObj = function(json) {
     }
 
     var remainingString = trimWhitespace(remainingString.slice(1)); // remove : and trim
-    
+
     // check to see if valueString includes a comma and more key/value pairs
     var nextCommaSeparator = findCommaSeparator(remainingString);
     
@@ -164,6 +164,41 @@ var parseObj = function(json) {
   return result;
 
 };
+
+var parseArray = function(arr) {
+
+  var arr = trimWhitespace(arr);
+
+  if (!checkBoundingChar(arr, '[')) {
+    return undefined;
+  }
+
+  var result = [];
+
+  var innerString = getInnerString(arr, '[');
+
+  if (innerString === '') {
+    return [];
+  }
+
+  var lastItem = false;
+
+  while (!lastItem) {
+    innerString = trimWhitespace(innerString);
+    var nextCommaSeparator = findCommaSeparator(innerString);
+    if (nextCommaSeparator === -1) {
+      result.push(parseValue(innerString));
+      lastItem = true;
+    } else {
+      result.push(parseValue(innerString.slice(0, nextCommaSeparator)));
+      innerString = innerString.slice(nextCommaSeparator + 1);
+    }
+  }
+
+  return result;
+
+};
+
 
 var parseValue = function(val) {
   // your code goes here
@@ -184,16 +219,23 @@ var parseValue = function(val) {
 
   if (val[0] === '{') {
     return parseObj(val);
-  } else if (val[0] === '"') {
+  }
+
+  if (val[0] === '"') {
     // val is actually a string
     if (!checkBoundingChar(val, '"')) {
       return undefined;
     } else {
       return val.slice(1, val.length -1);
     }
-  } else { // more cases need to go here. just obj and num for now
-    return +val;
   }
+
+  if (val[0] === '[') {
+    return parseArray(val);
+  }
+
+  return +val;
+
 };
 
 ////////////////////////////////
@@ -204,7 +246,7 @@ var parseJSON = function(json) {
 
   var json = trimWhitespace(json);
   var firstChar = json[0];
-  if (firstChar === '{' || firstChar == '[') {
+  if (firstChar === '{' || firstChar === '[') {
     if (checkBoundingChar(json)) {
       return parseValue(json);
     }
