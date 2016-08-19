@@ -71,12 +71,13 @@ var findCommaSeparator = function(str) {
   // looked like 9, "b":10 and would return 1
 
   // need to step through the string and find a comma
-  // NOT in a string-value
+  // NOT in a string-value OR an array separator
 
   var str = trimWhitespace(str);
   var inStringValue = str[0] === '"' ? true : false;
-  for (var i = 0; i < str.length; i++) {
-    if (str[i] === ',' && !inStringValue) {
+  var inArray = str[0] ==='[' ? true : false;
+  for (var i = 1; i < str.length; i++) {
+    if (str[i] === ',' && !inStringValue && !inArray) {
       // this would be the i to slice the string after too
       return i;
     }
@@ -87,6 +88,12 @@ var findCommaSeparator = function(str) {
       } else {
         inStringValue = true;
       }
+    }
+    if (str[i] === ']' && inArray && !inStringValue) {
+      inArray = false;
+    }
+    if (str[i] === '[' && !inArray && !inStringValue) {
+      inArray = true;
     }
   }
   return -1;
