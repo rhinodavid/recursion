@@ -81,7 +81,7 @@ var findCommaSeparator = function(str) {
       // this would be the i to slice the string after too
       return i;
     }
-    if (str[i] === '"') {
+    if (str[i] === '"' && str[i-1] !== '\\') {
       // flip the value
       if (inStringValue) {
         inStringValue = false;
@@ -97,6 +97,28 @@ var findCommaSeparator = function(str) {
     }
   }
   return -1;
+};
+
+var escapeString = function(str) {
+  var result = "";
+  var pos = 0;
+  while (pos < str.length) {
+    if (str[pos] === '\\') {
+      // need to check to see next char
+      if ((str[pos+1] !== '\\' &&
+          str[pos+1] !== '\"') ||
+          pos === str.length - 1) {
+        return undefined;
+      } else {
+        result = result + str[pos + 1];
+        pos += 2;
+      }
+    } else {
+      result = result + str[pos];
+      pos++;
+    }
+  }
+  return result;
 };
 
 ////////// HELPER //////////
@@ -233,7 +255,8 @@ var parseValue = function(val) {
     if (!checkBoundingChar(val, '"')) {
       return undefined;
     } else {
-      return val.slice(1, val.length -1);
+      var str = val.slice(1, val.length - 1);
+      return str;
     }
   }
 
