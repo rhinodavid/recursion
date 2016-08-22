@@ -11,9 +11,17 @@ var trimWhitespace = function (str) {
   
   // currently only trims spaces. will need to eventually
   // include tab, newline, etc
-  if (str[0] === ' ') {
+  var whiteSpace = [
+    ' ',
+    '\t',
+    '\n',
+    '\r',
+    '\f'
+  ];
+  var ind = whiteSpace.indexOf(str[0]);
+  if (whiteSpace.indexOf(str[0]) !== -1) {
     return trimWhitespace(str.slice(1));
-  } else if (str[str.length -1] === ' ') {
+  } else if (whiteSpace.indexOf(str[str.length - 1]) !== -1) {
     return trimWhitespace(str.slice(0,-1));
   } else {
     return str;
@@ -39,6 +47,16 @@ var checkBoundingChar = function(str, char) {
   };
 
   if (str[0] === char && str[str.length - 1] === pair[char]) {
+    // check to make sure the ending char isn't an escaped
+    // quotation mark
+    if (str[str.length - 1] === '"'
+      && (str[str.length - 2] === '\\'
+      && str[str.length - 3] !== '\\')) { // third conditional covers the case
+                                          // where the last char is the " and
+                                          // the char in front of it is the \
+                                          // but the \ itself is escaped
+      return false;
+    }
     return true;
   } else {
     return false;
@@ -145,8 +163,7 @@ var parseObj = function(json) {
   var result = {};
 
   if (!checkBoundingChar(json, '{')) {
-    debugger;
-    return undefined;
+    throw new SyntaxError("Unexpected end of JSON input");
   }
 
   var innerString = getInnerString(json, '{');
@@ -160,8 +177,7 @@ var parseObj = function(json) {
     if (innerString[0] !== '"') {
       // object keys not surrounded by quotes,
       // therefore JSON is not properly formed
-      debugger;
-      return undefined;
+      throw new SyntaxError("Unexpected end of JSON input");
     }
     // walk through string and find other quotation mark
     var posQuote = -1;
@@ -176,8 +192,7 @@ var parseObj = function(json) {
     if (posQuote === -1) {
       // no matching quote on the other side.
       // JSON is not properly formed
-      debugger;
-      return undefined;
+      throw new SyntaxError("Unexpected end of JSON input");
     }
 
     var key = innerString.slice(1, posQuote);
@@ -190,8 +205,7 @@ var parseObj = function(json) {
     // first char should now be the ':'
 
     if (remainingString[0] !== ':') {
-      debugger;
-      return undefined;
+      throw new SyntaxError("Unexpected charachter in JSON input");
     }
 
     var remainingString = trimWhitespace(remainingString.slice(1)); // remove : and trim
@@ -220,8 +234,7 @@ var parseArray = function(arr) {
   var arr = trimWhitespace(arr);
 
   if (!checkBoundingChar(arr, '[')) {
-    debugger;
-    return undefined;
+    throw new SyntaxError("Unexpected end of JSON input");
   }
 
   var result = [];
@@ -275,7 +288,7 @@ var parseValue = function(val) {
   if (val[0] === '"') {
     // val is actually a string
     if (!checkBoundingChar(val, '"')) {
-      return undefined;
+      throw new SyntaxError("Unexpected end of JSON input");
     } else {
       var str = val.slice(1, val.length - 1);
       return escapeString(str);
@@ -283,7 +296,6 @@ var parseValue = function(val) {
   }
 
   if (val[0] === '[') {
-    if (val[val.length - 1] === "}") debugger;
     return parseArray(val);
   }
 
@@ -304,5 +316,5 @@ var parseJSON = function(json) {
       return parseValue(json);
     }
   }
-  return undefined;
+  throw new SyntaxError("Unexpected JSON input");
 };
