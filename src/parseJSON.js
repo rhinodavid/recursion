@@ -256,7 +256,7 @@ var parseValue = function(val) {
       return undefined;
     } else {
       var str = val.slice(1, val.length - 1);
-      return str;
+      return escapeString(str);
     }
   }
 
