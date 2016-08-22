@@ -75,9 +75,10 @@ var findCommaSeparator = function(str) {
 
   var str = trimWhitespace(str);
   var inStringValue = str[0] === '"' ? true : false;
-  var inArray = str[0] ==='[' ? true : false;
+  var arrayLevel = str[0] === '[' ? 1 : 0; // how far into nested arrays we are (0 we are not in one)
+  var objLevel = str[0] === '{' ? 1 : 0; // how far into nested objects we are
   for (var i = 1; i < str.length; i++) {
-    if (str[i] === ',' && !inStringValue && !inArray) {
+    if (str[i] === ',' && !inStringValue && arrayLevel === 0 && objLevel === 0) {
       // this would be the i to slice the string after too
       return i;
     }
@@ -89,28 +90,44 @@ var findCommaSeparator = function(str) {
         inStringValue = true;
       }
     }
-    if (str[i] === ']' && inArray && !inStringValue) {
-      inArray = false;
+    if (str[i] === ']' && !inStringValue) {
+      arrayLevel--;
     }
-    if (str[i] === '[' && !inArray && !inStringValue) {
-      inArray = true;
+    if (str[i] === '[' && !inStringValue) {
+      arrayLevel++;
+    }
+    if (str[i] === '}' && !inStringValue) {
+      objLevel--;
+    }
+    if (str[i] === '{' && !inStringValue) {
+      objLevel++;
     }
   }
   return -1;
 };
 
 var escapeString = function(str) {
+  var escapeable = [
+    '\"',
+    '\'',
+    '\\',
+    '\/',
+    '\b',
+    '\f',
+    '\n',
+    '\r',
+    '\t'
+  ];
   var result = "";
   var pos = 0;
   while (pos < str.length) {
     if (str[pos] === '\\') {
       // need to check to see next char
-      if ((str[pos+1] !== '\\' &&
-          str[pos+1] !== '\"') ||
+      var ind = escapeable.indexOf(str[pos + 1]);
+      if (ind === -1 ||
           pos === str.length - 1) {
-        return undefined;
       } else {
-        result = result + str[pos + 1];
+        result = result + escapeable[ind];
         pos += 2;
       }
     } else {
@@ -128,6 +145,7 @@ var parseObj = function(json) {
   var result = {};
 
   if (!checkBoundingChar(json, '{')) {
+    debugger;
     return undefined;
   }
 
@@ -142,6 +160,7 @@ var parseObj = function(json) {
     if (innerString[0] !== '"') {
       // object keys not surrounded by quotes,
       // therefore JSON is not properly formed
+      debugger;
       return undefined;
     }
     // walk through string and find other quotation mark
@@ -157,6 +176,7 @@ var parseObj = function(json) {
     if (posQuote === -1) {
       // no matching quote on the other side.
       // JSON is not properly formed
+      debugger;
       return undefined;
     }
 
@@ -170,6 +190,7 @@ var parseObj = function(json) {
     // first char should now be the ':'
 
     if (remainingString[0] !== ':') {
+      debugger;
       return undefined;
     }
 
@@ -199,6 +220,7 @@ var parseArray = function(arr) {
   var arr = trimWhitespace(arr);
 
   if (!checkBoundingChar(arr, '[')) {
+    debugger;
     return undefined;
   }
 
@@ -261,6 +283,7 @@ var parseValue = function(val) {
   }
 
   if (val[0] === '[') {
+    if (val[val.length - 1] === "}") debugger;
     return parseArray(val);
   }
 
