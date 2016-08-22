@@ -59,6 +59,9 @@ parseableStrings = [
   '["\\\\\\"\\"a\\""]',
   '["and you can\'t escape thi\s"]',
 
+  // custom everything-at-once to simplify
+  '{"a":9,"b":{"c":"d"},"e":[1,4,{"f":200}]}',
+
   // everything all at once
   '{"CoreletAPIVersion":2,"CoreletType":"standalone",' +
     '"documentation":"A corelet that provides the capability to upload' +
