@@ -16,38 +16,32 @@ var includesObject = function(arr, obj) {
 
 
 var getElementsByClassName = function(className) {
-
+  var element = arguments[1] || document.body;
   var result = [];
 
-  var buildResult = function(className, element) {
-    var element = element || document.body;
+  // if element is a node
 
-    // if element is a node
+  if (element.nodeType === 3) {
+    // we are at a text node (nodeType of 3)
+    return [];
+  }
 
-    if (element.nodeType === 3) {
-      // we are at a text node (nodeType of 3)
-      return;
+  if (element.nodeType) {
+    // just got a node. first check it
+    if ('classList' in element && includesObject(element.classList, className)) {
+      result.push(element);
     }
-
-    if (element.nodeType) {
-      // just got a node. first check it
-      if ('classList' in element && includesObject(element.classList, className)) {
-        result.push(element);
-      }
-      // check to see if it has children
-      // if so, push them to the function
-      if (element.hasChildNodes()) {
-        buildResult(className, element.childNodes);
-      }
-    } else {
-      // if element.nodeType is undefined, it is an array of child nodes
-      // put each array item through the function
-      for (var i = 0; i < element.length; i++) {
-        buildResult(className, element[i]);
-      }
+    // check to see if it has children
+    // if so, push them to the function
+    if (element.hasChildNodes()) {
+      result = result.concat(getElementsByClassName(className, element.childNodes));
     }
-  };
-
-  buildResult(className);
+  } else {
+    // if element.nodeType is undefined, it is an array of child nodes
+    // put each array item through the function
+    for (var i = 0; i < element.length; i++) {
+      result = result.concat(getElementsByClassName(className, element[i]));
+    }
+  }
   return result;
 };
